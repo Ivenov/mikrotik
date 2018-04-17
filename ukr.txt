@@ -1,0 +1,42 @@
+﻿
+tcp-flags=fin,syn
+add action=add-src-to-address-list address-list=PortScanner \
+address-list-timeout=2w chain=input comment="" disabled=no protocol=tcp \
+tcp-flags=fin,syn,rst,psh,ack,urg
+add action=add-src-to-address-list address-list=PortScanner \
+address-list-timeout=2w chain=input comment="" disabled=no protocol=tcp \
+tcp-flags=syn,rst
+add action=add-src-to-address-list address-list=PortScanner \
+address-list-timeout=2w chain=input comment="" disabled=no protocol=tcp \
+tcp-flags=fin,psh,urg,!syn,!rst,!ack
+add action=add-src-to-address-list address-list=PortScanner \
+address-list-timeout=2w chain=input comment="" disabled=no protocol=tcp \
+tcp-flags=!fin,!syn,!rst,!psh,!ack,!urg
+add action=drop chain=input comment="" disabled=no src-address-list=\
+PortScanner
+
+/ip firewall address-list
+add address=0.0.0.0/8 disabled=no list=BOGON
+add address=10.0.0.0/8 disabled=no list=BOGON
+add address=100.64.0.0/10 disabled=no list=BOGON
+add address=127.0.0.0/8 disabled=no list=BOGON
+add address=169.254.0.0/16 disabled=no list=BOGON
+add address=172.16.0.0/12 disabled=no list=BOGON
+add address=192.0.0.0/24 disabled=no list=BOGON
+add address=192.0.2.0/24 disabled=no list=BOGON
+add address=192.168.0.0/16 disabled=no list=BOGON
+add address=198.18.0.0/15 disabled=no list=BOGON
+add address=198.51.100.0/24 disabled=no list=BOGON
+add address=203.0.113.0/24 disabled=no list=BOGON
+add address=224.0.0.0/4 disabled=no list=BOGON
+add address=240.0.0.0/4 disabled=no list=BOGON
+
+
+загрузите файл списка адресов в маршрутизатор:
+/ tool fetch url=http://www.iwik.org/ipcountry/mikrotik/UA
+
+Импорт IP-адреса из файла в адрес-список:
+/ import file-name=UA
+
+Правило фильтра:
+/ ip firewall filter add chain=forward in-interface=eth1-wan src-address-list=!UA action=drop comment="only UA country" disabled=no
